@@ -1,0 +1,178 @@
+/** @import must precede all other statements */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /**
+   * Tailwind CSS theme - Professional Judicial System Colors
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+   * A different format will require also updating the theme in tailwind.config.ts.
+  */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 213 13% 23%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 213 13% 23%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 13% 23%;
+
+    --primary: 213 51% 37%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 213 10% 91%;
+    --secondary-foreground: 213 13% 23%;
+
+    --muted: 213 8% 83%;
+    --muted-foreground: 213 8% 40%;
+
+    --accent: 7 93% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 213 10% 91%;
+    --input: 213 10% 96%;
+    --ring: 213 51% 37%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 213 51% 37%;
+
+    --sidebar-foreground: 0 0% 100%;
+
+    --sidebar-primary: 213 51% 37%;
+
+    --sidebar-primary-foreground: 0 0% 100%;
+
+    --sidebar-accent: 213 40% 50%;
+
+    --sidebar-accent-foreground: 0 0% 100%;
+
+    --sidebar-border: 213 40% 45%;
+
+    --sidebar-ring: 7 93% 60%;
+  }
+
+  .dark {
+    --background: 213 15% 12%;
+    --foreground: 0 0% 97%;
+
+    --card: 213 18% 18%;
+    --card-foreground: 0 0% 97%;
+
+    --popover: 213 18% 18%;
+    --popover-foreground: 0 0% 97%;
+
+    --primary: 213 70% 58%;
+    --primary-foreground: 213 15% 12%;
+
+    --secondary: 213 18% 28%;
+    --secondary-foreground: 0 0% 97%;
+
+    --muted: 213 12% 35%;
+    --muted-foreground: 213 8% 70%;
+
+    --accent: 7 93% 60%;
+    --accent-foreground: 213 15% 12%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 213 18% 28%;
+    --input: 213 18% 28%;
+    --ring: 213 70% 58%;
+
+    --sidebar-background: 213 18% 15%;
+    --sidebar-foreground: 0 0% 97%;
+    --sidebar-primary: 213 70% 58%;
+    --sidebar-primary-foreground: 213 15% 12%;
+    --sidebar-accent: 213 40% 50%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 213 18% 28%;
+    --sidebar-ring: 7 93% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  pre,
+  code {
+    overflow-x: auto;
+    white-space: pre;
+  }
+}
+
+/* Fond dégradé animé pour la page de login */
+.bg-login-gradient {
+  background: radial-gradient(circle at top left, #1d4ed8 0, transparent 55%),
+    radial-gradient(circle at bottom right, #22c55e 0, transparent 55%),
+    linear-gradient(135deg, #020617 0%, #0f172a 40%, #1e293b 100%);
+  background-size: 200% 200%;
+}
+
+/* Animation du dégradé */
+@keyframes loginGradientMove {
+  0% {
+    transform: translate3d(0, 0, 0);
+    background-position: 0% 50%;
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+    background-position: 100% 50%;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    background-position: 0% 50%;
+  }
+}
+
+.animate-login-gradient {
+  animation: loginGradientMove 18s ease-in-out infinite;
+}
+
+/* Blobs flottants */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -20px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 10px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 16s ease-in-out infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
