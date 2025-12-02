@@ -21,6 +21,36 @@ export interface JudicialEventApi {
   updated_at: string;
 }
 
+/**
+ * Helpers pour gérer les deux formats possibles de réponse :
+ * - tableau direct : [ {..}, {..} ]
+ * - objet enveloppe : { data: [ {..}, {..} ] }
+ */
+type ListResponse = JudicialEventApi[] | { data: JudicialEventApi[] };
+type SingleResponse = JudicialEventApi | { data: JudicialEventApi };
+
+function extractList(data: ListResponse): JudicialEventApi[] {
+  if (Array.isArray(data)) {
+    return data;
+  }
+  if (data && Array.isArray((data as any).data)) {
+    return (data as any).data;
+  }
+  console.error("Format de réponse inattendu pour la liste des événements :", data);
+  return [];
+}
+
+function extractOne(data: SingleResponse): JudicialEventApi | null {
+  if (data && (data as any).data) {
+    return (data as any).data as JudicialEventApi;
+  }
+  if (data && (data as any).id) {
+    return data as JudicialEventApi;
+  }
+  console.error("Format de réponse inattendu pour un événement judiciaire :", data);
+  return null;
+}
+
 // Conversion API → Frontend
 const fromApi = (apiEvent: JudicialEventApi): JudicialEvent => ({
   id: apiEvent.id,
@@ -55,34 +85,47 @@ const toApiPayload = (event: JudicialEvent) => ({
 
 // Service Axios
 export const judicialEventService = {
+  // 🔹 Liste avec support des réponses paginées ou non
   async list(search?: string): Promise<JudicialEvent[]> {
-    const response = await apiClient.get<JudicialEventApi[]>("/judicial-events", {
+    const response = await apiClient.get<ListResponse>("/judicial-events", {
       params: search ? { q: search } : {},
     });
 
-    return response.data.map(fromApi);
+    const events = extractList(response.data);
+    return events.map(fromApi);
   },
 
+  // 🔹 Création
   async create(data: JudicialEvent): Promise<JudicialEvent> {
-    const response = await apiClient.post<JudicialEventApi>(
+    const response = await apiClient.post<SingleResponse>(
       "/judicial-events",
       toApiPayload(data)
     );
 
-    return fromApi(response.data);
+    const apiEvent = extractOne(response.data);
+    if (!apiEvent) {
+      throw new Error("Réponse invalide lors de la création d'un événement");
+    }
+    return fromApi(apiEvent);
   },
 
+  // 🔹 Mise à jour
   async update(event: JudicialEvent): Promise<JudicialEvent> {
     if (!event.id) throw new Error("ID manquant pour la mise à jour");
 
-    const response = await apiClient.put<JudicialEventApi>(
+    const response = await apiClient.put<SingleResponse>(
       `/judicial-events/${event.id}`,
       toApiPayload(event)
     );
 
-    return fromApi(response.data);
+    const apiEvent = extractOne(response.data);
+    if (!apiEvent) {
+      throw new Error("Réponse invalide lors de la mise à jour d'un événement");
+    }
+    return fromApi(apiEvent);
   },
 
+  // 🔹 Suppression
   async remove(id: number): Promise<void> {
     await apiClient.delete(`/judicial-events/${id}`);
   },
