@@ -7,6 +7,7 @@ import Layout from "@/components/Layout";
 import EventForm, { JudicialEvent } from "@/components/EventForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -52,6 +53,12 @@ import autoTable from "jspdf-autotable";
 export default function Dashboard() {
   const [events, setEvents] = useState<JudicialEvent[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // 🔎 Filtres date
+  const [filterDate, setFilterDate] = useState(""); // date exacte
+  const [filterStartDate, setFilterStartDate] = useState(""); // du
+  const [filterEndDate, setFilterEndDate] = useState(""); // au
+
   const [formOpen, setFormOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<JudicialEvent | null>(null);
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
@@ -128,22 +135,49 @@ export default function Dashboard() {
 
   const filteredEvents = useMemo(() => {
     const query = searchQuery.toLowerCase();
+
     return events.filter((event) => {
       const numeroStr =
         event.numero !== undefined && event.numero !== null
           ? String(event.numero)
           : "";
-      return (
+
+      // date au format "YYYY-MM-DD" (compatible avec <input type="date" />)
+      const eventDate = event.date ? event.date.slice(0, 10) : "";
+
+      const matchesText =
         numeroStr.includes(query) ||
         event.infractions.toLowerCase().includes(query) ||
         (event.saisine || "").toLowerCase().includes(query) ||
         event.partieCivileNoms.toLowerCase().includes(query) ||
         event.misEnCauseNoms.toLowerCase().includes(query) ||
         (event.resultat || "").toLowerCase().includes(query) ||
-        event.date.includes(query)
-      );
+        event.date.includes(query);
+
+      // ✅ Filtre par date exacte
+      if (filterDate) {
+        if (!eventDate || eventDate !== filterDate) {
+          return false;
+        }
+      }
+
+      // ✅ Filtre intervalle "Du"
+      if (filterStartDate) {
+        if (!eventDate || eventDate < filterStartDate) {
+          return false;
+        }
+      }
+
+      // ✅ Filtre intervalle "Au"
+      if (filterEndDate) {
+        if (!eventDate || eventDate > filterEndDate) {
+          return false;
+        }
+      }
+
+      return matchesText;
     });
-  }, [events, searchQuery]);
+  }, [events, searchQuery, filterDate, filterStartDate, filterEndDate]);
 
   const handleAddEvent = async (formEvent: JudicialEvent) => {
     try {
@@ -418,34 +452,88 @@ export default function Dashboard() {
   return (
     <Layout title="Gestion des Événements">
       <div className="space-y-6">
-        {/* Barre de recherche + boutons */}
-        <div className="flex gap-4 justify-between items-center flex-wrap">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher par numéro, date, infraction, saisine, partie civile..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        {/* Barre de recherche + filtres date + boutons */}
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-4 justify-between items-center flex-wrap">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher par numéro, date, infraction, saisine, partie civile..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={exportToExcel}
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                Export Excel
+              </Button>
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={exportToPDF}
+              >
+                <FileText className="w-4 h-4" />
+                Export PDF
+              </Button>
+              <Button onClick={() => setFormOpen(true)} className="gap-2">
+                <Plus className="w-4 h-4" />
+                Ajouter un événement
+              </Button>
+            </div>
           </div>
 
-          <div className="flex gap-2 flex-wrap">
+          {/* Filtres date */}
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="space-y-1">
+              <Label htmlFor="filterDate">Date exacte</Label>
+              <Input
+                id="filterDate"
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className="w-[180px]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="filterStart">Du</Label>
+              <Input
+                id="filterStart"
+                type="date"
+                value={filterStartDate}
+                onChange={(e) => setFilterStartDate(e.target.value)}
+                className="w-[180px]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="filterEnd">Au</Label>
+              <Input
+                id="filterEnd"
+                type="date"
+                value={filterEndDate}
+                onChange={(e) => setFilterEndDate(e.target.value)}
+                className="w-[180px]"
+              />
+            </div>
+
             <Button
+              type="button"
               variant="outline"
-              className="gap-2"
-              onClick={exportToExcel}
+              onClick={() => {
+                setFilterDate("");
+                setFilterStartDate("");
+                setFilterEndDate("");
+              }}
             >
-              <FileSpreadsheet className="w-4 h-4" />
-              Export Excel
-            </Button>
-            <Button variant="outline" className="gap-2" onClick={exportToPDF}>
-              <FileText className="w-4 h-4" />
-              Export PDF
-            </Button>
-            <Button onClick={() => setFormOpen(true)} className="gap-2">
-              <Plus className="w-4 h-4" />
-              Ajouter un événement
+              Réinitialiser les dates
             </Button>
           </div>
         </div>
@@ -543,8 +631,8 @@ export default function Dashboard() {
                   <TableRow>
                     <TableCell colSpan={13} className="text-center py-8">
                       <p className="text-muted-foreground">
-                        {searchQuery
-                          ? "Aucun événement ne correspond à votre recherche"
+                        {searchQuery || filterDate || filterStartDate || filterEndDate
+                          ? "Aucun événement ne correspond à vos filtres"
                           : "Aucun événement enregistré"}
                       </p>
                     </TableCell>
@@ -660,7 +748,7 @@ export default function Dashboard() {
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-">
+            <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
