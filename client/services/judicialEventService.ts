@@ -17,6 +17,7 @@ export interface JudicialEventApi {
   mis_en_cause_pv_reference: string | null;
   observation: string | null;
   resultat: string | null;
+  photo_url?: string | null; 
   created_at: string;
   updated_at: string;
 }
@@ -36,7 +37,10 @@ function extractList(data: ListResponse): JudicialEventApi[] {
   if (data && Array.isArray((data as any).data)) {
     return (data as any).data;
   }
-  console.error("Format de réponse inattendu pour la liste des événements :", data);
+  console.error(
+    "Format de réponse inattendu pour la liste des événements :",
+    data
+  );
   return [];
 }
 
@@ -47,7 +51,10 @@ function extractOne(data: SingleResponse): JudicialEventApi | null {
   if (data && (data as any).id) {
     return data as JudicialEventApi;
   }
-  console.error("Format de réponse inattendu pour un événement judiciaire :", data);
+  console.error(
+    "Format de réponse inattendu pour un événement judiciaire :",
+    data
+  );
   return null;
 }
 
@@ -66,26 +73,47 @@ const fromApi = (apiEvent: JudicialEventApi): JudicialEvent => ({
   misEnCausePVTexte: apiEvent.mis_en_cause_pv_reference ?? "",
   observations: apiEvent.observation ?? "",
   resultat: apiEvent.resultat ?? "",
+  photoUrl: apiEvent.photo_url ?? undefined,
+  photoFile: null,
 });
 
-// Conversion Frontend → API
-const toApiPayload = (event: JudicialEvent) => ({
-  date_evenement: event.date,
-  infractions: event.infractions,
-  saisine: event.saisine || null,
-  partie_civile_identites: event.partieCivileNoms || null,
-  partie_civile_pv_numero: event.partieCivilePVNumero || null,
-  partie_civile_pv_reference: event.partieCivilePVTexte || null,
-  mis_en_cause_identites: event.misEnCauseNoms || null,
-  mis_en_cause_pv_numero: event.misEnCausePVNumero || null,
-  mis_en_cause_pv_reference: event.misEnCausePVTexte || null,
-  observation: event.observations || null,
-  resultat: event.resultat || null,
-});
+// Construction du FormData pour envoyer aussi la photo
+const toFormData = (event: JudicialEvent): FormData => {
+  const fd = new FormData();
+
+  fd.append("date_evenement", event.date);
+  fd.append("infractions", event.infractions);
+
+  if (event.saisine) fd.append("saisine", event.saisine);
+
+  if (event.partieCivileNoms)
+    fd.append("partie_civile_identites", event.partieCivileNoms);
+  if (event.partieCivilePVNumero)
+    fd.append("partie_civile_pv_numero", event.partieCivilePVNumero);
+  if (event.partieCivilePVTexte)
+    fd.append("partie_civile_pv_reference", event.partieCivilePVTexte);
+
+  if (event.misEnCauseNoms)
+    fd.append("mis_en_cause_identites", event.misEnCauseNoms);
+  if (event.misEnCausePVNumero)
+    fd.append("mis_en_cause_pv_numero", event.misEnCausePVNumero);
+  if (event.misEnCausePVTexte)
+    fd.append("mis_en_cause_pv_reference", event.misEnCausePVTexte);
+
+  if (event.observations) fd.append("observation", event.observations);
+  if (event.resultat) fd.append("resultat", event.resultat);
+
+  // Ajout du fichier photo si présent
+  if (event.photoFile) {
+    fd.append("photo", event.photoFile);
+  }
+
+  return fd;
+};
 
 // Service Axios
 export const judicialEventService = {
-  // 🔹 Liste avec support des réponses paginées ou non
+  //  Liste avec support des réponses paginées ou non
   async list(search?: string): Promise<JudicialEvent[]> {
     const response = await apiClient.get<ListResponse>("/judicial-events", {
       params: search ? { q: search } : {},
@@ -95,11 +123,18 @@ export const judicialEventService = {
     return events.map(fromApi);
   },
 
-  // 🔹 Création
+  //  Création (multipart/form-data)
   async create(data: JudicialEvent): Promise<JudicialEvent> {
+    const formData = toFormData(data);
+
     const response = await apiClient.post<SingleResponse>(
       "/judicial-events",
-      toApiPayload(data)
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
 
     const apiEvent = extractOne(response.data);
@@ -109,13 +144,20 @@ export const judicialEventService = {
     return fromApi(apiEvent);
   },
 
-  // 🔹 Mise à jour
+  //  Mise à jour (multipart/form-data)
   async update(event: JudicialEvent): Promise<JudicialEvent> {
     if (!event.id) throw new Error("ID manquant pour la mise à jour");
 
-    const response = await apiClient.put<SingleResponse>(
-      `/judicial-events/${event.id}`,
-      toApiPayload(event)
+    const formData = toFormData(event);
+
+    const response = await apiClient.post<SingleResponse>(
+      `/judicial-events/${event.id}?_method=PUT`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
     );
 
     const apiEvent = extractOne(response.data);
@@ -125,7 +167,7 @@ export const judicialEventService = {
     return fromApi(apiEvent);
   },
 
-  // 🔹 Suppression
+  //  Suppression
   async remove(id: number): Promise<void> {
     await apiClient.delete(`/judicial-events/${id}`);
   },

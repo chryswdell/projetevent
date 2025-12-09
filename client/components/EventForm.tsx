@@ -34,6 +34,8 @@ export interface JudicialEvent {
   misEnCausePVTexte: string;
   observations: string;
   resultat: string;
+  photoUrl?: string;        // URL renvoyée par l’API (si déjà enregistrée)
+  photoFile?: File | null;  // Fichier sélectionné côté front
 }
 
 interface EventFormProps {
@@ -42,20 +44,6 @@ interface EventFormProps {
   onSubmit: (event: JudicialEvent) => void;
   initialData?: JudicialEvent | null;
 }
-
-// A compléter avec la vraie liste d'infractions depuis ton document
-// const INFRACTIONS_OPTIONS: string[] = [
-//   "Vol simple",
-//   "Vol qualifié",
-//   "Coups et blessures volontaires",
-//   "Homicide volontaire",
-//   "Escroquerie",
-//   "Abus de confiance",
-//   "Recel",
-//   "Stupéfiants",
-//   "Port illégal d'arme",
-//   "Autre infraction",
-// ];
 
 const RESULTATS_OPTIONS: string[] = [
   "MANDAT DE DÉPÔT",
@@ -79,6 +67,8 @@ const emptyEvent: JudicialEvent = {
   misEnCausePVTexte: "",
   observations: "",
   resultat: "",
+  photoUrl: undefined,
+  photoFile: null,
 };
 
 export default function EventForm({
@@ -92,13 +82,24 @@ export default function EventForm({
   );
 
   useEffect(() => {
-    setFormData(initialData || emptyEvent);
+    setFormData({
+      ...emptyEvent,
+      ...(initialData || {}),
+      photoFile: null,
+    });
   }, [initialData, open]);
 
   const handleInputChange = (field: keyof JudicialEvent, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleFileChange = (file: File | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      photoFile: file,
     }));
   };
 
@@ -148,7 +149,7 @@ export default function EventForm({
             />
           </div>
 
-          {/* Infraction (liste) */}
+          {/* Infraction (liste avec recherche) */}
           <div className="space-y-2">
             <Label htmlFor="infractions">Infraction *</Label>
             <Input
@@ -175,6 +176,26 @@ export default function EventForm({
               value={formData.saisine}
               onChange={(e) => handleInputChange("saisine", e.target.value)}
             />
+          </div>
+
+          {/* Photo */}
+          <div className="space-y-2">
+            <Label htmlFor="photo">Photo (facultatif)</Label>
+            <Input
+              id="photo"
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0] || null;
+                handleFileChange(file);
+              }}
+            />
+            {formData.photoUrl && (
+              <p className="text-xs text-muted-foreground">
+                Une photo est déjà enregistrée pour cet événement. Elle sera
+                affichée dans le détail.
+              </p>
+            )}
           </div>
 
           {/* Partie civile */}

@@ -67,7 +67,7 @@ export default function Dashboard() {
   const [viewingEvent, setViewingEvent] = useState<JudicialEvent | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
 
-  // ➕ on garde en mémoire si l'utilisateur est admin
+  // on garde en mémoire si l'utilisateur est admin
   const [isAdmin, setIsAdmin] = useState(false);
 
   const { toast } = useToast();
@@ -154,21 +154,21 @@ export default function Dashboard() {
         (event.resultat || "").toLowerCase().includes(query) ||
         event.date.includes(query);
 
-      // ✅ Filtre par date exacte
+      // Filtre par date exacte
       if (filterDate) {
         if (!eventDate || eventDate !== filterDate) {
           return false;
         }
       }
 
-      // ✅ Filtre intervalle "Du"
+      // Filtre intervalle "Du"
       if (filterStartDate) {
         if (!eventDate || eventDate < filterStartDate) {
           return false;
         }
       }
 
-      // ✅ Filtre intervalle "Au"
+      // Filtre intervalle "Au"
       if (filterEndDate) {
         if (!eventDate || eventDate > filterEndDate) {
           return false;
@@ -182,7 +182,7 @@ export default function Dashboard() {
   const handleAddEvent = async (formEvent: JudicialEvent) => {
     try {
       if (editingEvent && editingEvent.id) {
-        // 🔒 Modification réservée à l'admin
+        //  Modification réservée à l'admin
         if (!isAdmin) {
           toast({
             variant: "destructive",
@@ -219,7 +219,7 @@ export default function Dashboard() {
           ),
         });
       } else {
-        // ➕ Ajout autorisé pour tout le monde
+        //  Ajout autorisé pour tout le monde
         const created = await judicialEventService.create(formEvent);
         setEvents((prev) => [...prev, created]);
 
@@ -252,7 +252,7 @@ export default function Dashboard() {
   };
 
   const handleEditEvent = (event: JudicialEvent) => {
-    // 🔒 clic sur Modifier : seulement admin
+    //  clic sur Modifier : seulement admin
     if (!isAdmin) {
       toast({
         variant: "destructive",
@@ -272,7 +272,7 @@ export default function Dashboard() {
   };
 
   const handleDeleteEvent = (id: number) => {
-    // 🔒 Suppression réservée à l’admin aussi (logique)
+    //  Suppression réservée à l’admin aussi (logique)
     if (!isAdmin) {
       toast({
         variant: "destructive",
@@ -749,6 +749,18 @@ export default function Dashboard() {
             </DialogHeader>
 
             <div className="space-y-4">
+              {/*  Photo si disponible */}
+              {viewingEvent.photoUrl && (
+                <div className="border-b pb-4">
+                  <h3 className="font-semibold text-base mb-2">Photo</h3>
+                  <img
+                    src={viewingEvent.photoUrl}
+                    alt="Photo de l'événement"
+                    className="max-h-80 rounded-md border object-contain mx-auto"
+                  />
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">
