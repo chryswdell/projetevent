@@ -1,4 +1,3 @@
-// client/components/Layout.tsx
 import { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Scale, User, LogOut, Users } from "lucide-react";
@@ -36,11 +35,11 @@ export default function Layout({ children, title }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* HEADER */}
-      <header className="bg-primary text-primary-foreground shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-3">
-          {/* Logo + titre : renvoie vers le dashboard */}
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* ================= HEADER FIXE ================= */}
+      <header className="sticky top-0 z-50 bg-primary text-primary-foreground shadow-lg">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between gap-3">
+          {/* Logo + titre */}
           <button
             type="button"
             onClick={handleGoDashboard}
@@ -61,7 +60,7 @@ export default function Layout({ children, title }: LayoutProps) {
               <Button
                 variant="outline"
                 size="icon"
-                className="rounded-full border-primary/40 bg-primary-foreground/10 "
+                className="rounded-full border-primary/40 bg-primary-foreground/10"
               >
                 <User className="w-5 h-5" />
               </Button>
@@ -69,11 +68,17 @@ export default function Layout({ children, title }: LayoutProps) {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Utilisateur</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleGoUsers} className="cursor-pointer">
+
+              <DropdownMenuItem
+                onClick={handleGoUsers}
+                className="cursor-pointer"
+              >
                 <Users className="w-4 h-4 mr-2" />
                 <span>Gestion des utilisateurs</span>
               </DropdownMenuItem>
+
               <DropdownMenuSeparator />
+
               <DropdownMenuItem
                 onClick={handleLogout}
                 className="cursor-pointer text-destructive focus:text-destructive"
@@ -86,8 +91,8 @@ export default function Layout({ children, title }: LayoutProps) {
         </div>
       </header>
 
-      {/* CONTENU */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+      {/* ================= CONTENU SCROLLABLE ================= */}
+      <main className="flex-1 overflow-y-auto w-full px-4 sm:px-6 lg:px-8 py-8">
         {title && (
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-foreground">{title}</h2>
@@ -96,10 +101,10 @@ export default function Layout({ children, title }: LayoutProps) {
         {children}
       </main>
 
-      {/* FOOTER */}
-      <footer className="border-t border-border bg-secondary/30 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-muted-foreground text-sm">
-          <p>© 2024 Police Judiciaire - Système de Gestion des Événements</p>
+      {/* ================= FOOTER FIXE ================= */}
+      <footer className="sticky bottom-0 z-40 border-t border-border bg-secondary/90 backdrop-blur">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4 text-center text-sm text-muted-foreground">
+          © 2024 Police Judiciaire – Système de Gestion des Événements
         </div>
       </footer>
     </div>
