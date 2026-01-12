@@ -695,15 +695,17 @@ const exportToPDF = () => {
 
     return [
       {
-        accessorKey: "numero",
+        id: "numero",
         header: sortableHeader("Numéro"),
-        cell: ({ row }) => (
-          <span className="font-semibold text-primary">
-            {row.original.numero ?? ""}
-          </span>
-        ),
-        size: 90,
+        enableSorting: false, // 🔒 très important
+        cell: ({ row, table }) => {
+          const { pageIndex, pageSize } = table.getState().pagination;
+          return pageIndex * pageSize + row.index + 1;
+        },
+        size: 80,
       },
+
+
       {
         accessorKey: "date",
         header: sortableHeader("Date"),

@@ -91,18 +91,20 @@ function formatInfractions(list: string[]) {
 // Ici on le retire pour éviter la validation inutile.
 const schema = z.object({
   date: z.string().min(1, "La date est obligatoire."),
-  saisine: z.string().optional().default(""),
 
-  partieCivileNoms: z.string().optional().default(""),
-  partieCivilePVNumero: z.string().optional().default(""),
-  partieCivilePVTexte: z.string().optional().default(""),
+  saisine: z.string().min(1, "La saisine est obligatoire."),
 
-  misEnCauseNoms: z.string().optional().default(""),
-  misEnCausePVNumero: z.string().optional().default(""),
-  misEnCausePVTexte: z.string().optional().default(""),
+  partieCivileNoms: z.string().min(1, "Champ obligatoire."),
+  partieCivilePVNumero: z.string().min(1, "Champ obligatoire."),
+  partieCivilePVTexte: z.string().min(1, "Champ obligatoire."),
 
-  observations: z.string().optional().default(""),
-  resultat: z.string().optional().default(""),
+  misEnCauseNoms: z.string().min(1, "Champ obligatoire."),
+  misEnCausePVNumero: z.string().min(1, "Champ obligatoire."),
+  misEnCausePVTexte: z.string().min(1, "Champ obligatoire."),
+
+  // OPTIONNELS (comme demandé)
+  observations: z.string().optional(),
+  resultat: z.string().optional(),
 
   photoFile: z
     .any()
@@ -119,6 +121,7 @@ const schema = z.object({
       "Formats acceptés : JPG, PNG, WEBP."
     ),
 });
+
 
 type FormValues = z.infer<typeof schema>;
 
@@ -379,7 +382,7 @@ export default function EventForm({
 
                 {/* Saisine */}
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="saisine">Saisine</Label>
+                  <Label htmlFor="saisine">Saisine <RequiredMark /></Label>
                   <Input
                     id="saisine"
                     placeholder="Ex: plainte, signalement, réquisition, flagrant délit…"
@@ -451,7 +454,7 @@ export default function EventForm({
               <Section title="Partie civile" description="Identité et références PV (si disponibles).">
                 <div className="space-y-3">
                   <div className="space-y-2">
-                    <Label htmlFor="partieCivileNoms">Identité(s)</Label>
+                    <Label htmlFor="partieCivileNoms">Identité(s)<RequiredMark /></Label>
                     <Input
                       id="partieCivileNoms"
                       placeholder="Nom(s) de la partie civile"
@@ -475,7 +478,7 @@ export default function EventForm({
                   {showPVDetails && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label htmlFor="partieCivilePVNumero">N° PV</Label>
+                        <Label htmlFor="partieCivilePVNumero">N° PV<RequiredMark /></Label>
                         <Input
                           id="partieCivilePVNumero"
                           placeholder="Numéro du PV"
@@ -483,7 +486,7 @@ export default function EventForm({
                         />
                       </div>
                       <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="partieCivilePVTexte">Référence / résumé PV</Label>
+                        <Label htmlFor="partieCivilePVTexte">Référence / résumé PV<RequiredMark /></Label>
                         <Input
                           id="partieCivilePVTexte"
                           placeholder="Ex: PV d’audition du … / résumé…"
@@ -498,7 +501,7 @@ export default function EventForm({
               <Section title="Mis en cause" description="Identité et références PV (si disponibles).">
                 <div className="space-y-3">
                   <div className="space-y-2">
-                    <Label htmlFor="misEnCauseNoms">Identité(s)</Label>
+                    <Label htmlFor="misEnCauseNoms">Identité(s)<RequiredMark /></Label>
                     <Input
                       id="misEnCauseNoms"
                       placeholder="Nom(s) du/des mis en cause"
@@ -509,7 +512,7 @@ export default function EventForm({
                   {showPVDetails ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label htmlFor="misEnCausePVNumero">N° PV</Label>
+                        <Label htmlFor="misEnCausePVNumero">N° PV<RequiredMark /></Label>
                         <Input
                           id="misEnCausePVNumero"
                           placeholder="Numéro du PV"
@@ -517,7 +520,7 @@ export default function EventForm({
                         />
                       </div>
                       <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="misEnCausePVTexte">Référence / résumé PV</Label>
+                        <Label htmlFor="misEnCausePVTexte">Référence / résumé PV<RequiredMark /></Label>
                         <Input
                           id="misEnCausePVTexte"
                           placeholder="Ex: PV d’audition du … / résumé…"

@@ -1,4 +1,3 @@
-// client/components/MultiInfractionsSelect.tsx
 import * as React from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,8 +18,8 @@ import {
 
 type Props = {
   options: string[];
-  value: string[];                 // sélection courante
-  onChange: (v: string[]) => void; // setter
+  value: string[];
+  onChange: (v: string[]) => void;
   placeholder?: string;
   disabled?: boolean;
   error?: boolean;
@@ -35,6 +34,9 @@ export function MultiInfractionsSelect({
   error,
 }: Props) {
   const [open, setOpen] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState("");
+
+  const normalizedValue = inputValue.trim();
 
   const toggle = (item: string) => {
     if (value.includes(item)) {
@@ -46,6 +48,15 @@ export function MultiInfractionsSelect({
 
   const remove = (item: string) => {
     onChange(value.filter((v) => v !== item));
+  };
+
+  const addCustomInfraction = () => {
+    if (!normalizedValue) return;
+    if (value.includes(normalizedValue)) return;
+
+    onChange([...value, normalizedValue]);
+    setInputValue("");
+    setOpen(false);
   };
 
   return (
@@ -61,17 +72,41 @@ export function MultiInfractionsSelect({
               error && "border-destructive focus-visible:ring-destructive"
             )}
           >
-            <span className={cn("truncate", value.length === 0 && "text-muted-foreground")}>
-              {value.length === 0 ? placeholder : `${value.length} infraction(s) sélectionnée(s)`}
+            <span
+              className={cn(
+                "truncate",
+                value.length === 0 && "text-muted-foreground"
+              )}
+            >
+              {value.length === 0
+                ? placeholder
+                : `${value.length} infraction(s) sélectionnée(s)`}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 opacity-60" />
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <PopoverContent
+          className="w-[var(--radix-popover-trigger-width)] p-0"
+          align="start"
+        >
           <Command>
-            <CommandInput placeholder="Rechercher…" />
-            <CommandEmpty>Aucune infraction trouvée.</CommandEmpty>
+            <CommandInput
+              placeholder="Rechercher ou saisir une infraction…"
+              value={inputValue}
+              onValueChange={setInputValue}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addCustomInfraction();
+                }
+              }}
+            />
+
+            <CommandEmpty>
+              Appuie sur <b>Entrée</b> pour ajouter : “{inputValue}”
+            </CommandEmpty>
+
             <CommandGroup className="max-h-64 overflow-auto">
               {options.map((opt) => {
                 const selected = value.includes(opt);
@@ -83,7 +118,12 @@ export function MultiInfractionsSelect({
                     className="flex items-center justify-between"
                   >
                     <span className="mr-2">{opt}</span>
-                    <Check className={cn("h-4 w-4", selected ? "opacity-100" : "opacity-0")} />
+                    <Check
+                      className={cn(
+                        "h-4 w-4",
+                        selected ? "opacity-100" : "opacity-0"
+                      )}
+                    />
                   </CommandItem>
                 );
               })}
